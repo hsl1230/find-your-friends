@@ -1,0 +1,9 @@
+﻿<h1>Hi {{currentUser.firstName}}!</h1>
+<h3 (click)="createGameRoom()">Create a new game room</h3>
+<h3>All game rooms:</h3>
+<ul>
+    <li *ngFor="let room of gameRooms | async">
+        <a (click)="joinInRoom(room.roomId)" class="text-danger">Join in this game room</a>
+        <pre>{{ room | json }}</pre>
+    </li>
+</ul>
