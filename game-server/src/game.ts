@@ -68,10 +68,11 @@ export class Game {
 
     private shuffle() {
         const totalPokerNumber = 54 * this.setsOfPoker;
-        let index = 0;
+
+        let ind = 0;
         for (let j=0; j < this.setsOfPoker; j++) {
             for (let i=0; i < 54; i++) {
-                this.shuffledPoker[index++] = i;
+                this.shuffledPoker[ind++] = i;
             }
         }
 
@@ -81,5 +82,9 @@ export class Game {
             this.shuffledPoker[index] = this.shuffledPoker[totalPokerNumber - i - 1];
             this.shuffledPoker[totalPokerNumber - i - 1] = poker;
         }
+    }
+
+    getGamePlayer(playerId: string) {
+        return this.gamePlayers.find(player => player.player.playerId === playerId);
     }
 }

@@ -33,29 +33,48 @@ io.on('connection', socket => {
     });
 
     socket.on('get-game-rooms', () => {
-        io.emit('game-rooms', gameRooms);
+        socket.emit('game-rooms', gameRooms);
     })
 
     socket.on('join-in-room', roomInfo => {
         console.log('======join-in-room', roomInfo);
-        const roomGame = roomGames.find(game => game.gameRoom.roomId === roomInfo.roomId);
-        if (roomGame) {
-            safeJoinRoom(roomGame.gameRoom.roomId);
-            roomGame.addPlayer(roomInfo.playerId);
-            console.log('=====emit room-game', roomGame);
-            socket.emit('room-game', roomGame);
-            socket.to(roomGame.gameRoom.roomId).emit('room-game', roomGame);
+        const gameRoom = gameRooms.find(game => game.roomId === roomInfo.roomId);
+        if (gameRoom) {
+            safeJoinRoom(gameRoom.roomId);
+            gameRoom.addPlayer(roomInfo.playerId);
+            console.log('=====emit room-game', gameRoom);
+            socket.emit('game-room', gameRoom);
+            socket.to(gameRoom.roomId).emit('game-room', gameRoom);
         }
     });
 
     socket.on('start-game', roomInfo => {
-        const roomGame = roomGames.find(game => game.gameRoom.roomId === roomInfo.roomId);
-        if (roomGame) {
-            safeJoinRoom(roomGame.gameRoom.roomId);
-            roomGame.nextGame();
-            socket.to(roomGame.gameRoom.roomId).emit('room-game', roomGame);
+        const gameRoom = gameRooms.find(game => game.roomId === roomInfo.roomId);
+        if (gameRoom) {
+            const roomGame = new RoomGame(gameRoom);
+            roomGames.push(roomGame);
+            if (roomGame) {
+                safeJoinRoom(roomGame.gameRoom.roomId);
+                roomGame.nextGame();
+                if (roomGame.currentGame) {
+                    const gamePlayer = roomGame.currentGame.getGamePlayer(roomInfo.playerId);
+                    if (gamePlayer) {
+                        socket.emit('cards', gamePlayer.cards);
+                    }
+                } 
+            }    
         }
     })
+
+    socket.on('get-cards', roomInfo => {
+        const roomGame = roomGames.find(game => game.gameRoom.roomId === roomInfo.roomId);
+        if (roomGame && roomGame.currentGame) {
+            const gamePlayer = roomGame.currentGame.getGamePlayer(roomInfo.playerId);
+            if (gamePlayer) {
+                socket.emit('cards', gamePlayer.cards);
+            }
+        } 
+    });
 
     socket.on('play-cards', roomInfo => {
         const roomGame = roomGames.find(game => game.gameRoom.roomId === roomInfo.roomId);
@@ -63,7 +82,7 @@ io.on('connection', socket => {
             const gamePlayer = roomGame.currentGame.gamePlayers.find(player => player.player.playerId === roomInfo.playerId);
             if (gamePlayer) {
                 gamePlayer.play(roomInfo.cards);
-                socket.to(roomGame.gameRoom.roomId).emit('room-game', roomGame);
+                socket.to(roomGame.gameRoom.roomId).emit('game-player', gamePlayer);
             }
         }
     })

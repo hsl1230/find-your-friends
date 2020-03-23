@@ -1,13 +1,15 @@
 import { Injectable } from '@angular/core';
 import { Socket } from 'ngx-socket-io';
-import { RoomGame, GameRoom } from '../models';
+import { GameRoom } from '../models';
 
 @Injectable({
   providedIn: 'root'
 })
 export class GamingService {
   gameRooms = this.socket.fromEvent<GameRoom[]>('game-rooms');
-  currentRoomGame =  this.socket.fromEvent<RoomGame>('room-game');
+  gamePlayer = this.socket.fromEvent<GameRoom[]>('game-player');
+  currentGameRoom =  this.socket.fromEvent<GameRoom>('game-room');
+  cards =  this.socket.fromEvent<number[]>('cards');
 
   constructor(private socket: Socket) { }
 

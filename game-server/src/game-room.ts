@@ -5,7 +5,7 @@ let ROOM_ID = 0;
 export class GameRoom {
     roomId: string;
     players: Player[] = [];
-    
+
     constructor(
         public readonly startLevel: number,
         public readonly numberOfPlayer: number,

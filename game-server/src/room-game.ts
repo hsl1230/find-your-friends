@@ -7,7 +7,7 @@ export class RoomGame {
 
     constructor(public gameRoom: GameRoom) {
     }
-    
+
     nextGame() {
         if (this.gameRoom.players.length < this.gameRoom.numberOfPlayer) {
             return;
