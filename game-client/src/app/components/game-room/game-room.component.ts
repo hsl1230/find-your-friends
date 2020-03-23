@@ -10,7 +10,9 @@ import { GameRoom } from 'src/app/models';
 })
 export class GameRoomComponent implements OnInit, OnDestroy {
   currentGameRoom: GameRoom;
+  cards: number[];
   private _roomSub: Subscription;
+  private _cardsSub: Subscription;
 
   constructor(private gamingService: GamingService) { }
 
@@ -18,6 +20,9 @@ export class GameRoomComponent implements OnInit, OnDestroy {
     this._roomSub = this.gamingService.currentGameRoom.subscribe(game => {
       console.log('====game', game);
       this.currentGameRoom = game;
+    });
+    this._cardsSub = this.gamingService.cards.subscribe(cards => {
+      this.cards = cards;
     });
   }
 
