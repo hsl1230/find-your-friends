@@ -16,6 +16,7 @@ import { LoginComponent } from './components/login/login.component';
 import { RegisterComponent } from './components/register/register.component';
 import { AlertComponent } from './components/alert/alert.component';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 const config: SocketIoConfig = {url: 'http://localhost:8080', options: {}};
 
@@ -34,7 +35,8 @@ const config: SocketIoConfig = {url: 'http://localhost:8080', options: {}};
     HttpClientModule,
     AppRoutingModule,
     CommonModule,
-    SocketIoModule.forRoot(config)
+    SocketIoModule.forRoot(config),
+    BrowserAnimationsModule
   ],
   providers: [
     { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true },
@@ -42,7 +44,6 @@ const config: SocketIoConfig = {url: 'http://localhost:8080', options: {}};
 
     // provider used to create fake backend
     fakeBackendProvider
-
   ],
   bootstrap: [AppComponent]
 })

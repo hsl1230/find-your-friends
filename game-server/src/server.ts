@@ -25,7 +25,7 @@ io.on('connection', socket => {
     socket.on('create-game-room', roomInfo => {
         const gameRoom = new GameRoom(roomInfo.startLevel, roomInfo.numberOfPlayers, roomInfo.setsOfPoker, roomInfo.roomName);
         gameRooms.push(gameRoom);
- 
+
         safeJoinRoom(gameRoom.roomId);
 
         socket.emit('game-room', gameRoom);
@@ -49,22 +49,32 @@ io.on('connection', socket => {
     });
 
     socket.on('start-game', roomInfo => {
-        const gameRoom = gameRooms.find(game => game.roomId === roomInfo.roomId);
-        if (gameRoom) {
-            const roomGame = new RoomGame(gameRoom);
-            roomGames.push(roomGame);
-            if (roomGame) {
-                safeJoinRoom(roomGame.gameRoom.roomId);
-                roomGame.nextGame();
-                if (roomGame.currentGame) {
-                    const gamePlayer = roomGame.currentGame.getGamePlayer(roomInfo.playerId);
-                    if (gamePlayer) {
-                        socket.emit('cards', gamePlayer.cards);
-                    }
-                } 
-            }    
+        console.log('====start game', roomInfo);
+        safeJoinRoom(roomInfo.roomId);
+
+        let roomGame = roomGames.find(game => game.gameRoom.roomId === roomInfo.roomId);
+        if (!roomGame) {
+            const gameRoom = gameRooms.find(game => game.roomId === roomInfo.roomId);
+            if (gameRoom) {
+                roomGame = new RoomGame(gameRoom);
+                roomGames.push(roomGame);
+            }
         }
-    })
+
+        if (roomGame) {
+            if (!roomGame.currentGame) {
+                roomGame.nextGame();
+            }
+
+            if (roomGame.currentGame) {
+                const gamePlayer = roomGame.currentGame.getGamePlayer(roomInfo.playerId);
+                if (gamePlayer) {
+                    console.log('====start game', gamePlayer.cards);
+                    socket.emit('cards', gamePlayer.cards);
+                }
+            }
+        }
+    });
 
     socket.on('get-cards', roomInfo => {
         const roomGame = roomGames.find(game => game.gameRoom.roomId === roomInfo.roomId);
@@ -73,7 +83,7 @@ io.on('connection', socket => {
             if (gamePlayer) {
                 socket.emit('cards', gamePlayer.cards);
             }
-        } 
+        }
     });
 
     socket.on('play-cards', roomInfo => {

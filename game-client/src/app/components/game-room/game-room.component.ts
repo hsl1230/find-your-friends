@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { GamingService } from 'src/app/services/gaming.service';
 import { Subscription } from 'rxjs';
 import { GameRoom } from 'src/app/models';
+import { AuthenticationService } from 'src/app/services';
 
 @Component({
   selector: 'app-game-room',
@@ -14,7 +15,9 @@ export class GameRoomComponent implements OnInit, OnDestroy {
   private _roomSub: Subscription;
   private _cardsSub: Subscription;
 
-  constructor(private gamingService: GamingService) { }
+  constructor(
+    private gamingService: GamingService,
+    private authenticationService: AuthenticationService) { }
 
   ngOnInit(): void {
     this._roomSub = this.gamingService.currentGameRoom.subscribe(game => {
@@ -28,9 +31,10 @@ export class GameRoomComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this._roomSub.unsubscribe();
+    this._cardsSub.unsubscribe();
   }
 
   startGame() {
-    this.gamingService.startGame(this.currentGameRoom.roomId);
+    this.gamingService.startGame(this.currentGameRoom.roomId, this.authenticationService.currentUserValue.username);
   }
 }

@@ -25,7 +25,8 @@ export class GamingService {
     this.socket.emit('join-in-room', {roomId, playerId});
   }
 
-  startGame(roomId: string) {
-    this.socket.emit('start-game', {roomId});
+  startGame(roomId: string, playerId: string) {
+    console.log('===startGame', roomId)
+    this.socket.emit('start-game', {roomId, playerId});
   }
 }

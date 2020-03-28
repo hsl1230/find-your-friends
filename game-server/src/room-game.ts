@@ -9,7 +9,9 @@ export class RoomGame {
     }
 
     nextGame() {
+        console.log('========nextGame', this.gameRoom.players.length, this.gameRoom.numberOfPlayer);
         if (this.gameRoom.players.length < this.gameRoom.numberOfPlayer) {
+            console.log('========nextGame, exited');
             return;
         }
 
@@ -17,6 +19,7 @@ export class RoomGame {
             this.gamesPlayed.push(this.currentGame);
         }
 
+        console.log('========nextGame, new Game');
         this.currentGame = new Game(this.gameRoom.setsOfPoker, this.gameRoom.players);
     }
 }
