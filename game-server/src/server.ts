@@ -25,7 +25,6 @@ io.on('connection', socket => {
     socket.on('create-game-room', roomInfo => {
         const gameRoom = new GameRoom(roomInfo.startLevel, roomInfo.numberOfPlayers, roomInfo.setsOfPoker, roomInfo.roomName);
         gameRooms.push(gameRoom);
-
         safeJoinRoom(gameRoom.roomId);
 
         socket.emit('game-room', gameRoom);
@@ -41,7 +40,17 @@ io.on('connection', socket => {
         const gameRoom = gameRooms.find(game => game.roomId === roomInfo.roomId);
         if (gameRoom) {
             safeJoinRoom(gameRoom.roomId);
-            gameRoom.addPlayer(roomInfo.playerId);
+
+            let player = gameRoom.getPlayerByClientId(socket.client.id);
+            if (player) {
+                player.clientId = socket.client.id;
+            } else {
+                player = gameRoom.getPlayer(roomInfo.playerId);
+                if (!player) {
+                    gameRoom.addPlayer(roomInfo.playerId, socket.client.id);
+                }
+            }
+
             console.log('=====emit room-game', gameRoom);
             socket.emit('game-room', gameRoom);
             socket.to(gameRoom.roomId).emit('game-room', gameRoom);
@@ -67,35 +76,40 @@ io.on('connection', socket => {
             }
 
             if (roomGame.currentGame) {
-                const gamePlayer = roomGame.currentGame.getGamePlayer(roomInfo.playerId);
+                const gamePlayer = roomGame.currentGame.getGamePlayer(socket.client.id);
                 if (gamePlayer) {
                     console.log('====start game', gamePlayer.cards);
-                    socket.emit('cards', gamePlayer.cards);
+                    socket.emit('game-player', gamePlayer);
                 }
             }
         }
     });
 
-    socket.on('get-cards', roomInfo => {
+    socket.on('set-suit', roomInfo => {
         const roomGame = roomGames.find(game => game.gameRoom.roomId === roomInfo.roomId);
         if (roomGame && roomGame.currentGame) {
-            const gamePlayer = roomGame.currentGame.getGamePlayer(roomInfo.playerId);
-            if (gamePlayer) {
-                socket.emit('cards', gamePlayer.cards);
-            }
+            const game = roomGame.currentGame;
+            game.masterSuit = roomInfo.suit;
+            roomGame.gameRoom.players.forEach(player => {
+                const clientSocket = io.sockets.connected[player.clientId];
+                const gamePlayer = game.getGamePlayer(player.clientId);
+                clientSocket.emit('game-player', gamePlayer);
+            });
         }
     });
 
     socket.on('play-cards', roomInfo => {
         const roomGame = roomGames.find(game => game.gameRoom.roomId === roomInfo.roomId);
         if (roomGame && roomGame.currentGame) {
-            const gamePlayer = roomGame.currentGame.gamePlayers.find(player => player.player.playerId === roomInfo.playerId);
-            if (gamePlayer) {
-                gamePlayer.play(roomInfo.cards);
-                socket.to(roomGame.gameRoom.roomId).emit('game-player', gamePlayer);
-            }
+            const game = roomGame.currentGame;
+            game.playCards(socket.client.id, roomInfo.cards);
+            roomGame.gameRoom.players.forEach(player => {
+                const clientSocket = io.sockets.connected[player.clientId];
+                const gamePlayer = game.getGamePlayer(player.clientId);
+                clientSocket.emit('game-player', gamePlayer);
+            });
         }
-    })
+    });
 });
 
 httpServer.listen(8080, () => {

@@ -15,11 +15,19 @@ export class GameRoom {
         this.roomId = 'room-' + ROOM_ID;
     }
 
-    addPlayer(playerId: string) {
+    addPlayer(playerId: string, clientId: string) {
         if (this.players.length < this.numberOfPlayer) {
-            const player = new Player(playerId, this.startLevel);
+            const player = new Player(playerId, this.startLevel, clientId);
             this.players.push(player);
             return player;
         }
+    }
+
+    getPlayer(playerId: string) {
+        return this.players.find(player => player.playerId === playerId);
+    }
+
+    getPlayerByClientId(clientId: string) {
+        return this.players.find(player => player.clientId === clientId);
     }
 }

@@ -3,7 +3,7 @@ import { Game } from './game';
 
 export class GameRoom {
   roomId: string;
-  roomName:string;
+  roomName: string;
   startLevel: number;
   numberOfPlayer: number;
   setsOfPoker: number;
